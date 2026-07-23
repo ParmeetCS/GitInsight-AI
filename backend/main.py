@@ -16,6 +16,7 @@ from models import Base
 from api.repository import router as repository_router
 from api.analytics import router as analytics_router
 from api.chatbot import router as chatbot_router
+from api.auth import router as auth_router
 
 Base.metadata.create_all(bind=engine)
 
@@ -48,6 +49,7 @@ app.include_router(issues_router)
 app.include_router(pull_requests_router)
 app.include_router(analytics_router)
 app.include_router(chatbot_router)
+app.include_router(auth_router)
 
 if __name__ == "__main__":
     import uvicorn

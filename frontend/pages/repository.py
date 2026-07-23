@@ -1,6 +1,11 @@
+import os
+import sys
 import streamlit as st
 import requests
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from components import render_hero_banner, render_section_header
+from auth import Auth
 
 st.set_page_config(
     page_title="GitInsight AI | Manage Repositories",
@@ -8,7 +13,16 @@ st.set_page_config(
     layout="wide"
 )
 
-BACKEND_URL = "http://127.0.0.1:8000"
+if not Auth.is_authenticated():
+    st.error("🔒 Authentication Required")
+    st.info("Please log in or register on the **Home** page to access Repository Management.")
+    st.stop()
+
+BACKEND_URL = os.getenv("BACKEND_URL", "http://127.0.0.1:8000").rstrip("/")
+
+def get_headers():
+    token = Auth.get_token()
+    return {"Authorization": f"Bearer {token}"} if token else {}
 
 render_hero_banner(
     "Ingest & Manage Repositories",
@@ -33,13 +47,20 @@ with col1:
                 try:
                     res = requests.post(
                         f"{BACKEND_URL}/repository/ingest",
-                        json={"owner": owner_input.strip(), "repo": repo_input.strip()}
+                        json={"owner": owner_input.strip(), "repo": repo_input.strip()},
+                        headers=get_headers()
                     )
                     if res.status_code == 200:
-                        repo_details = requests.get(f"{BACKEND_URL}/repository/{owner_input.strip()}/{repo_input.strip()}")
+                        repo_details = requests.get(
+                            f"{BACKEND_URL}/repository/{owner_input.strip()}/{repo_input.strip()}",
+                            headers=get_headers()
+                        )
                         if repo_details.status_code == 200:
                             repo_data = repo_details.json()
-                            requests.post(f"{BACKEND_URL}/analytics/{repo_data['id']}")
+                            requests.post(
+                                f"{BACKEND_URL}/analytics/{repo_data['id']}",
+                                headers=get_headers()
+                            )
                             st.success(f"Ingested and analyzed **{owner_input}/{repo_input}**!")
                             st.session_state.selected_repo_name = f"{repo_data['owner']}/{repo_data['name']}"
                             st.session_state.active_repo = repo_data
@@ -54,7 +75,7 @@ with col1:
 with col2:
     render_section_header("Ingested Projects Database")
     try:
-        res = requests.get(f"{BACKEND_URL}/repository/")
+        res = requests.get(f"{BACKEND_URL}/repository/", headers=get_headers())
         if res.status_code == 200:
             repos_list = res.json()
             if not repos_list:
@@ -94,10 +115,14 @@ with col2:
                             with st.spinner("Refreshing..."):
                                 refresh_res = requests.post(
                                     f"{BACKEND_URL}/repository/refresh",
-                                    json={"owner": active_repo["owner"], "repo": active_repo["name"]}
+                                    json={"owner": active_repo["owner"], "repo": active_repo["name"]},
+                                    headers=get_headers()
                                 )
                                 if refresh_res.status_code == 200:
-                                    requests.post(f"{BACKEND_URL}/analytics/{active_repo['id']}")
+                                    requests.post(
+                                        f"{BACKEND_URL}/analytics/{active_repo['id']}",
+                                        headers=get_headers()
+                                    )
                                     st.success("Refreshed repository and analytics!")
                                     st.rerun()
                                 else:

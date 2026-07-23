@@ -1,3 +1,4 @@
+from sqlalchemy import null
 from sqlalchemy import (
     Column,
     Integer,
@@ -227,3 +228,13 @@ class RepositoryAnalytics(Base):
     updated_at = Column(DateTime)
 
     repository = relationship("Repository", back_populates="analytics")
+
+class User(Base):
+
+    __tablename__ = "user"
+
+    id=Column(Integer,primary_key=True,index=True)
+    username=Column(String(100),unique=True,nullable=False)
+    email=Column(String(150),unique=True,nullable=False)
+    hashed_password=Column(String(225),nullable=False)
+    created_at=Column(DateTime)

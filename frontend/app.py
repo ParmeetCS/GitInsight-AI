@@ -1,6 +1,9 @@
+import os
 import streamlit as st
 import requests
 from components import render_hero_banner, render_section_header
+from api_client import APIClient
+from auth import Auth
 
 st.set_page_config(
     page_title="GitInsight AI | Developer Health Monitor",
@@ -9,19 +12,110 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-BACKEND_URL = "http://127.0.0.1:8000"
+BACKEND_URL = os.getenv("BACKEND_URL", "http://127.0.0.1:8000").rstrip("/")
 
+# -----------------------------------------------------------------------------
+# Authentication Guard
+# -----------------------------------------------------------------------------
+if not Auth.is_authenticated():
+    st.title("Welcome to GitInsight AI 🚀")
+    st.write("AI-Powered Developer Community Health & Contributor Churn Monitor")
+    st.divider()
+
+    tab_login, tab_register = st.tabs(["🔑 Login", "📝 Register"])
+
+    with tab_login:
+        st.subheader("Login to your account")
+        email = st.text_input("Email", key="login_email")
+        password = st.text_input("Password", type="password", key="login_password")
+        if st.button("Login", type="primary", key="btn_login"):
+            if not email or not password:
+                st.error("Please enter both email and password.")
+            else:
+                try:
+                    res = APIClient.login(email, password)
+                    if res is not None and res.status_code == 200:
+                        data = res.json()
+                        if isinstance(data, dict):
+                            token = data.get("access_token")
+                            if token:
+                                username = data.get("username", email.split("@")[0])
+                                Auth.login(token, username)
+                                st.success("Logged in successfully!")
+                                st.rerun()
+                            else:
+                                st.error("Login failed: Access token missing in server response.")
+                        else:
+                            st.error("Login failed: Invalid server response format.")
+                    else:
+                        err_msg = "Invalid email or password."
+                        if res is not None:
+                            try:
+                                data = res.json()
+                                if isinstance(data, dict):
+                                    err_msg = data.get("detail", err_msg)
+                            except Exception:
+                                pass
+                        st.error(f"Login failed: {err_msg}")
+                except Exception as e:
+                    st.error(f"Could not connect to backend server: {e}")
+
+    with tab_register:
+        st.subheader("Create a new account")
+        reg_username = st.text_input("Username", key="reg_username")
+        reg_email = st.text_input("Email", key="reg_email")
+        reg_password = st.text_input("Password", type="password", key="reg_password")
+        if st.button("Register", type="primary", key="btn_register"):
+            if not reg_username or not reg_email or not reg_password:
+                st.error("Please fill in all fields.")
+            else:
+                try:
+                    res = APIClient.register(reg_username, reg_email, reg_password)
+                    if res is not None and res.status_code in (200, 201):
+                        st.success("Account registered successfully! Please log in.")
+                    else:
+                        err_msg = "Registration failed."
+                        if res is not None:
+                            try:
+                                data = res.json()
+                                if isinstance(data, dict):
+                                    err_msg = data.get("detail", err_msg)
+                            except Exception:
+                                pass
+                        st.error(f"Registration failed: {err_msg}")
+                except Exception as e:
+                    st.error(f"Could not connect to backend server: {e}")
+
+    st.stop()
+
+
+# -----------------------------------------------------------------------------
+# Authenticated Application View
+# -----------------------------------------------------------------------------
 def get_all_repositories():
     try:
-        response = requests.get(f"{BACKEND_URL}/repository/")
+        token = Auth.get_token()
+        headers = {"Authorization": f"Bearer {token}"} if token else {}
+        response = requests.get(f"{BACKEND_URL}/repository/", headers=headers)
         if response.status_code == 200:
             return response.json()
     except Exception:
         st.error(f"Could not connect to backend at {BACKEND_URL}.")
     return []
 
+
+# Sidebar Controls
 st.sidebar.title("GitInsight AI")
 st.sidebar.caption("Developer Community Health Monitor")
+
+username = Auth.get_username()
+if username:
+    st.sidebar.write(f"👤 **Logged in as:** `{username}`")
+
+if st.sidebar.button("🚪 Logout", key="btn_logout"):
+    Auth.logout()
+    st.rerun()
+
 st.sidebar.divider()
 
 repos = get_all_repositories()
@@ -48,11 +142,13 @@ else:
 st.sidebar.divider()
 st.sidebar.info("Navigation: Select pages from sidebar to view details, charts, and chatbot.")
 
+# Hero Banner
 render_hero_banner(
     "AI-Powered Developer Health & Churn Monitor",
     "Analyze git repository patterns, project engagement metrics, and community health. Leverage machine learning to predict contributor churn and monitor community health."
 )
 
+# Active Repository Overview & Features
 if st.session_state.active_repo:
     repo = st.session_state.active_repo
     col1, col2 = st.columns([2, 1])

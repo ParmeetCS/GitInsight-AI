@@ -1,6 +1,11 @@
+import os
+import sys
 import streamlit as st
 import requests
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from components import render_hero_banner, render_section_header, render_health_score_gauge
+from auth import Auth
 
 st.set_page_config(
     page_title="GitInsight AI | Dashboard",
@@ -8,7 +13,16 @@ st.set_page_config(
     layout="wide"
 )
 
-BACKEND_URL = "http://127.0.0.1:8000"
+if not Auth.is_authenticated():
+    st.error("🔒 Authentication Required")
+    st.info("Please log in or register on the **Home** page to access the Dashboard.")
+    st.stop()
+
+BACKEND_URL = os.getenv("BACKEND_URL", "http://127.0.0.1:8000").rstrip("/")
+
+def get_headers():
+    token = Auth.get_token()
+    return {"Authorization": f"Bearer {token}"} if token else {}
 
 render_hero_banner(
     "Project Health Dashboard",
@@ -23,13 +37,13 @@ else:
     
     analytics = None
     try:
-        res = requests.get(f"{BACKEND_URL}/analytics/{repo_id}")
+        res = requests.get(f"{BACKEND_URL}/analytics/{repo_id}", headers=get_headers())
         if res.status_code == 200:
             analytics = res.json()
         elif res.status_code == 404:
-            gen_res = requests.post(f"{BACKEND_URL}/analytics/{repo_id}")
+            gen_res = requests.post(f"{BACKEND_URL}/analytics/{repo_id}", headers=get_headers())
             if gen_res.status_code == 200:
-                res = requests.get(f"{BACKEND_URL}/analytics/{repo_id}")
+                res = requests.get(f"{BACKEND_URL}/analytics/{repo_id}", headers=get_headers())
                 if res.status_code == 200:
                     analytics = res.json()
     except Exception:
@@ -45,7 +59,7 @@ else:
         else:
             st.warning("Could not load health analytics.")
             if st.button("Generate Analytics"):
-                requests.post(f"{BACKEND_URL}/analytics/{repo_id}")
+                requests.post(f"{BACKEND_URL}/analytics/{repo_id}", headers=get_headers())
                 st.rerun()
                 
         st.subheader("Metadata Info")

@@ -1,9 +1,14 @@
+import os
+import sys
 import streamlit as st
 import requests
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from components import render_hero_banner, render_section_header
+from auth import Auth
 
 st.set_page_config(
     page_title="GitInsight AI | Analytics & Predictions",
@@ -11,7 +16,16 @@ st.set_page_config(
     layout="wide"
 )
 
-BACKEND_URL = "http://127.0.0.1:8000"
+if not Auth.is_authenticated():
+    st.error("🔒 Authentication Required")
+    st.info("Please log in or register on the **Home** page to access Analytics & ML Predictions.")
+    st.stop()
+
+BACKEND_URL = os.getenv("BACKEND_URL", "http://127.0.0.1:8000").rstrip("/")
+
+def get_headers():
+    token = Auth.get_token()
+    return {"Authorization": f"Bearer {token}"} if token else {}
 
 render_hero_banner(
     "Visual Analytics & Machine Learning Predictions",
@@ -31,7 +45,7 @@ else:
     with pred_col1:
         st.subheader("Contributor Churn Prediction")
         try:
-            res = requests.get(f"{BACKEND_URL}/analytics/{repo_id}/churn")
+            res = requests.get(f"{BACKEND_URL}/analytics/{repo_id}/churn", headers=get_headers())
             if res.status_code == 200:
                 churn_data = res.json()
                 risk = churn_data.get("risk", "Medium")
@@ -47,8 +61,8 @@ else:
     with pred_col2:
         st.subheader("Future Health Score Trend")
         try:
-            growth_res = requests.get(f"{BACKEND_URL}/analytics/{repo_id}/growth")
-            analytics_res = requests.get(f"{BACKEND_URL}/analytics/{repo_id}")
+            growth_res = requests.get(f"{BACKEND_URL}/analytics/{repo_id}/growth", headers=get_headers())
+            analytics_res = requests.get(f"{BACKEND_URL}/analytics/{repo_id}", headers=get_headers())
             
             if growth_res.status_code == 200 and analytics_res.status_code == 200:
                 predicted_score = growth_res.json().get("predicted_health_score", 50.0)
@@ -70,7 +84,7 @@ else:
     with row1_col1:
         st.subheader("Commit Activity Over Time")
         try:
-            res = requests.get(f"{BACKEND_URL}/commits/{repo_id}")
+            res = requests.get(f"{BACKEND_URL}/commits/{repo_id}", headers=get_headers())
             if res.status_code == 200 and res.json():
                 df_commits = pd.DataFrame(res.json())
                 df_commits['commit_date'] = pd.to_datetime(df_commits['commit_date'])
@@ -87,7 +101,7 @@ else:
     with row1_col2:
         st.subheader("Code Language Distribution")
         try:
-            res = requests.get(f"{BACKEND_URL}/repository/{repo_id}/languages")
+            res = requests.get(f"{BACKEND_URL}/repository/{repo_id}/languages", headers=get_headers())
             if res.status_code == 200 and res.json():
                 df_langs = pd.DataFrame(res.json())
                 fig_pie = px.pie(df_langs, names='language_name', values='bytes_of_code', hole=0.4)
@@ -102,7 +116,7 @@ else:
     with row2_col1:
         st.subheader("Issue Backlog Status")
         try:
-            res = requests.get(f"{BACKEND_URL}/issues/{repo_id}")
+            res = requests.get(f"{BACKEND_URL}/issues/{repo_id}", headers=get_headers())
             if res.status_code == 200 and res.json():
                 df_issues = pd.DataFrame(res.json())
                 state_counts = df_issues['state'].value_counts().reset_index()
@@ -117,7 +131,7 @@ else:
     with row2_col2:
         st.subheader("Pull Request Review States")
         try:
-            res = requests.get(f"{BACKEND_URL}/pull-requests/{repo_id}")
+            res = requests.get(f"{BACKEND_URL}/pull-requests/{repo_id}", headers=get_headers())
             if res.status_code == 200 and res.json():
                 df_prs = pd.DataFrame(res.json())
                 df_prs['status'] = df_prs.apply(
@@ -134,7 +148,7 @@ else:
             
     st.subheader("Contributor Contribution Shares")
     try:
-        res = requests.get(f"{BACKEND_URL}/contributors/{repo_id}")
+        res = requests.get(f"{BACKEND_URL}/contributors/{repo_id}", headers=get_headers())
         if res.status_code == 200 and res.json():
             df_contrib = pd.DataFrame(res.json()).sort_values('contributions', ascending=False).head(15)
             fig_contrib = px.bar(df_contrib, y='username', x='contributions', orientation='h')

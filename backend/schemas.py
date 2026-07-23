@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel,EmailStr
 from typing import Optional
 from datetime import datetime
 
@@ -124,3 +124,26 @@ class RepositoryRequest(BaseModel):
 class RepositoryRefreshRequest(BaseModel):
     owner: str
     repo: str
+
+class UserRegister(BaseModel):
+    username:str
+    email:EmailStr
+    password:str
+
+class UserLogin(BaseModel):
+    email:EmailStr
+    password:str
+
+class UserResponse(BaseModel):
+    id:int
+    username:str
+    email:EmailStr
+    
+    class Config:
+        from_attributes=True
+
+class Token(BaseModel):
+    access_token:str
+    token_type:str
+    
+
