@@ -491,11 +491,6 @@ Below is an overview of key REST API endpoints provided by the backend:
 
 ---
 
-## 📄 License
-
-Distributed under the **MIT License**. See `LICENSE` for details.
-
----
 
 ## 🤝 Contributing
 
@@ -507,7 +502,3 @@ Contributions are welcome! If you'd like to improve GitInsight AI:
 5. Open a Pull Request.
 
 ---
-
-<p align="center">
-  Made with ❤️ by <b>GitInsight AI Team</b>
-</p>
