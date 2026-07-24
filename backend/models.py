@@ -1,4 +1,3 @@
-from sqlalchemy import null
 from sqlalchemy import (
     Column,
     Integer,
@@ -17,10 +16,11 @@ class Repository(Base):
     __tablename__ = "repositories"
 
     id = Column(Integer, primary_key=True, index=True)
-    github_id = Column(BigInteger, unique=True, nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), nullable=True, index=True)
+    github_id = Column(BigInteger, nullable=False, index=True)
     owner = Column(String(100), nullable=False)
     name = Column(String(200), nullable=False)
-    full_name = Column(String(255), unique=True, nullable=False)
+    full_name = Column(String(255), nullable=False, index=True)
     description = Column(Text)
     language = Column(String(100))
     license = Column(String(100))
@@ -33,6 +33,7 @@ class Repository(Base):
     created_at = Column(DateTime)
     updated_at = Column(DateTime)
 
+    user = relationship("User", back_populates="repositories")
     contributors = relationship("Contributor", back_populates="repository", cascade="all, delete-orphan")
     commits = relationship("Commit", back_populates="repository", cascade="all, delete-orphan")
     issues = relationship("Issue", back_populates="repository", cascade="all, delete-orphan")
@@ -75,7 +76,7 @@ class Commit(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     repository_id = Column(Integer, ForeignKey("repositories.id", ondelete="CASCADE"), nullable=False)
-    sha = Column(String(100), unique=True, nullable=False, index=True)
+    sha = Column(String(100), nullable=False, index=True)
     author_name = Column(String(255))
     author_username = Column(String(255))
     committer_name = Column(String(255))
@@ -95,7 +96,7 @@ class Issue(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     repository_id = Column(Integer, ForeignKey("repositories.id", ondelete="CASCADE"), nullable=False)
-    github_issue_id = Column(BigInteger, unique=True, nullable=False, index=True)
+    github_issue_id = Column(BigInteger, nullable=False, index=True)
     issue_number = Column(Integer, nullable=False)
     title = Column(String(500), nullable=False)
     body = Column(Text)
@@ -119,7 +120,7 @@ class PullRequest(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     repository_id = Column(Integer, ForeignKey("repositories.id", ondelete="CASCADE"), nullable=False)
-    github_pr_id = Column(BigInteger, unique=True, nullable=False, index=True)
+    github_pr_id = Column(BigInteger, nullable=False, index=True)
     pr_number = Column(Integer, nullable=False)
     title = Column(String(500), nullable=False)
     body = Column(Text)
@@ -148,7 +149,7 @@ class Release(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     repository_id = Column(Integer, ForeignKey("repositories.id", ondelete="CASCADE"), nullable=False)
-    github_release_id = Column(BigInteger, unique=True, nullable=False, index=True)
+    github_release_id = Column(BigInteger, nullable=False, index=True)
     tag_name = Column(String(100), nullable=False)
     name = Column(String(255))
     body = Column(Text)
@@ -230,11 +231,12 @@ class RepositoryAnalytics(Base):
     repository = relationship("Repository", back_populates="analytics")
 
 class User(Base):
-
     __tablename__ = "user"
 
-    id=Column(Integer,primary_key=True,index=True)
-    username=Column(String(100),unique=True,nullable=False)
-    email=Column(String(150),unique=True,nullable=False)
-    hashed_password=Column(String(225),nullable=False)
-    created_at=Column(DateTime)
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String(100), unique=True, nullable=False)
+    email = Column(String(150), unique=True, nullable=False)
+    hashed_password = Column(String(225), nullable=False)
+    created_at = Column(DateTime)
+
+    repositories = relationship("Repository", back_populates="user", cascade="all, delete-orphan")

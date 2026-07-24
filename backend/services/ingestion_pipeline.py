@@ -18,11 +18,15 @@ class IngestionServices:
         self.github = GitHubClient()
         self.db = SessionLocal()
         
-    def ingest_repository(self, owner: str, repo: str):
-        existing_repo = self.db.query(Repository).filter(
+    def ingest_repository(self, owner: str, repo: str, user_id: int = None):
+        query = self.db.query(Repository).filter(
             Repository.owner.ilike(owner),
             Repository.name.ilike(repo)
-        ).first()
+        )
+        if user_id is not None:
+            query = query.filter(Repository.user_id == user_id)
+        
+        existing_repo = query.first()
         if existing_repo:
             self.db.delete(existing_repo)
             self.db.commit()
@@ -30,6 +34,7 @@ class IngestionServices:
         repo_data = self.github.get_repository(owner, repo)
 
         repository = Repository(
+            user_id=user_id,
             github_id=repo_data["id"],
             owner=repo_data["owner"]["login"],
             name=repo_data["name"],
@@ -226,8 +231,8 @@ class IngestionServices:
             )
             self.db.add(lang)
 
-    def run_pipeline(self, owner, repo):
-        repository = self.ingest_repository(owner, repo)
+    def run_pipeline(self, owner: str, repo: str, user_id: int = None):
+        repository = self.ingest_repository(owner, repo, user_id=user_id)
         self.ingest_contributor(owner, repo, repository.id)
         self.ingest_commits(owner, repo, repository.id)
         self.ingest_issues(owner, repo, repository.id)

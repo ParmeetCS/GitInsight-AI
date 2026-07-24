@@ -1,8 +1,9 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
+from sqlalchemy.orm import Session
 from pydantic import BaseModel
-from database import SessionLocal
-from models import Repository, Contributor, Commit, Issue, PullRequest, RepositoryAnalytics
+from models import Repository, Contributor, Commit, Issue, PullRequest, RepositoryAnalytics, User
 from services.llm_services import LLMService
+from deps import get_current_user, get_db
 
 router = APIRouter(
     prefix="/chatbot",
@@ -13,12 +14,11 @@ class ChatRequest(BaseModel):
     question: str
 
 @router.post("/repository/{repository_id}")
-def chat_about_repository(repository_id: int, request: ChatRequest):
-    db = SessionLocal()
+def chat_about_repository(repository_id: int, request: ChatRequest, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     llm = LLMService()
 
     try:
-        repo = db.query(Repository).filter(Repository.id == repository_id).first()
+        repo = db.query(Repository).filter(Repository.id == repository_id, Repository.user_id == current_user.id).first()
         if not repo:
             raise HTTPException(status_code=404, detail="Repository not found.")
 
@@ -66,7 +66,7 @@ def chat_about_repository(repository_id: int, request: ChatRequest):
 
         response = llm.repository_chat(repo_data, request.question)
         return {"response": response}
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    finally:
-        db.close()
