@@ -15,9 +15,12 @@ psycopg2-binary==2.9.10
 alembic==1.14.0
 
 # -----------------------------
-# Data Validation
+# Data Validation & Security
 # -----------------------------
 pydantic==2.10.4
+email-validator==2.2.0
+bcrypt==4.2.1
+python-jose[cryptography]==3.3.0
 
 # -----------------------------
 # Environment Variables
@@ -31,7 +34,7 @@ requests==2.32.3
 PyGithub==2.5.0
 
 # -----------------------------
-# Data Processing & ML (Pinned to versions with universal binary wheels)
+# Data Processing & ML
 # -----------------------------
 numpy==1.26.4
 pandas==2.2.2
