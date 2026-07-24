@@ -13,10 +13,16 @@ from api.issues import router as issues_router
 from api.pull_requests import router as pull_requests_router
 from database import engine
 from models import Base
+from migrate_db import run_migration
 from api.repository import router as repository_router
 from api.analytics import router as analytics_router
 from api.chatbot import router as chatbot_router
 from api.auth import router as auth_router
+
+try:
+    run_migration()
+except Exception as e:
+    print("Database migration notice:", e)
 
 Base.metadata.create_all(bind=engine)
 
