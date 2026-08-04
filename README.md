@@ -2,35 +2,54 @@
 
 > **AI-Powered Developer Community Health & Contributor Churn Monitor**
 
-GitInsight AI is an advanced, full-stack analytics and predictive intelligence platform engineered for GitHub repositories. It enables engineering leaders, open-source maintainers, and community managers to automatically ingest repository metrics, evaluate health indicators (such as **Bus Factor**, **Health Score**, and **Issue Resolution Velocity**), run **VADER Sentiment Analysis**, predict **contributor churn and repository growth** using machine learning, and interact with an **AI Repository Assistant** powered by LLMs.
+[![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688?style=flat-square&logo=fastapi)](https://fastapi.tiangolo.com/)
+[![Streamlit](https://img.shields.io/badge/Frontend-Streamlit-FF4B4B?style=flat-square&logo=streamlit)](https://streamlit.io/)
+[![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL%20%2F%20Neon-4169E1?style=flat-square&logo=postgresql)](https://neon.tech/)
+[![Python](https://img.shields.io/badge/Python-3.9%2B-3776AB?style=flat-square&logo=python)](https://www.python.org/)
+[![Scikit-Learn](https://img.shields.io/badge/ML-Scikit--Learn-F7931E?style=flat-square&logo=scikit-learn)](https://scikit-learn.org/)
+[![OpenRouter](https://img.shields.io/badge/AI-OpenRouter%20LLM-6366F1?style=flat-square)](https://openrouter.ai/)
+
+**GitInsight AI** is an end-to-end, full-stack analytics and predictive intelligence platform engineered for GitHub repositories. It empowers engineering leaders, open-source maintainers, and developer advocates to automatically ingest repository activity, evaluate key community health indicators (such as **Bus Factor**, **Health Score**, **Commit Frequency**, and **Issue Resolution Velocity**), execute **VADER Sentiment Analysis**, predict **contributor churn and repository growth** using machine learning, and interact with a context-aware **AI Repository Assistant** powered by state-of-the-art LLMs.
+
+---
+
+## 🌐 Live Deployments
+
+- 🖥️ **Frontend Dashboard**: [https://gitinsight-ai-fwij96hyhhcqms3nohvvhf.streamlit.app/](https://gitinsight-ai-fwij96hyhhcqms3nohvvhf.streamlit.app/)
+- ⚙️ **Backend REST API**: [https://gitinsight-ai-utz2.onrender.com](https://gitinsight-ai-utz2.onrender.com)
+- 📑 **Interactive API Docs (Swagger)**: [https://gitinsight-ai-utz2.onrender.com/docs](https://gitinsight-ai-utz2.onrender.com/docs)
 
 ---
 
 ## 🌟 Key Features
 
-- 🔄 **Automated GitHub Data Ingestion**: Seamlessly fetch repositories, commits, contributors, issues, pull requests, releases, branches, tags, and language breakdowns using the GitHub REST API.
-- 📊 **Developer Community Health Metrics**: Calculate holistic health scores (0-100), commit frequencies, PR merge rates, issue resolution times, community engagement, and critical **Bus Factor** risks.
+- 🔐 **User Authentication & Session Management**: Secure user registration, password hashing (`bcrypt`), and JWT-based authentication token handling (`python-jose`) for personalized workspace management.
+- 🔄 **Automated GitHub Data Ingestion**: Fetch comprehensive entity data using the GitHub REST API, including repositories, commits, contributors, issues, pull requests, releases, branches, tags, and language breakdowns.
+- 📊 **Developer Community Health Metrics**: Automatically compute holistic repository health scores (0-100), commit frequencies, PR merge velocity, issue resolution times, community engagement, and critical **Bus Factor** risk metrics.
 - 🔮 **Machine Learning Churn & Growth Prediction**: 
-  - Predict contributor churn risk (High / Medium / Low & Probability %) using trained Scikit-Learn **RandomForest Classifier** models with heuristic fallbacks.
-  - Forecast future repository growth and health score trajectories with **RandomForest Regressor**.
-- 💬 **VADER Sentiment & NLP Analytics**: Evaluate community sentiment across issues and pull requests to spot contributor burnout or toxic discussions early.
-- 🤖 **AI Repository Chatbot**: Ask questions about active contributors, commit history, open issues, and repository health summaries powered by **OpenRouter LLM (GPT Models)**.
-- 🎨 **Modern Streamlit Dashboard**: Clean, responsive multi-page dashboard featuring interactive data visualizations, repository controls, and real-time analytical insights.
+  - Predict contributor churn risk (**High / Medium / Low** & **Churn Probability %**) using trained **RandomForest Classifier** models with intelligent heuristic fallbacks.
+  - Forecast future repository growth trends and health trajectory scores with a **RandomForest Regressor**.
+- 💬 **VADER Sentiment & NLP Analytics**: Perform real-time Natural Language Processing (NLP) sentiment scoring across issue bodies and pull request discussions to detect contributor burnout and community friction early.
+- 🤖 **AI Repository Assistant**: Interact with an AI chatbot powered by **OpenRouter LLMs** for deep context-aware Q&A, repository activity summaries, and metric explanations.
+- 🎨 **Modern Streamlit Dashboard**: Clean, responsive, multi-page user interface with custom CSS design tokens, Plotly interactive visualizations, search filtering, and user session management.
 
 ---
 
 ## 🏗 System Architecture
 
-The following diagram illustrates the architecture of GitInsight AI, showing how the **Streamlit Frontend**, **FastAPI Backend**, **PostgreSQL Database**, **Scikit-Learn ML Engines**, and **External APIs** interact:
+The diagram below illustrates the end-to-end architecture of GitInsight AI, demonstrating interactions across the **Streamlit UI**, **FastAPI Backend**, **PostgreSQL Database**, **Scikit-Learn ML Models**, and **External APIs**:
 
 ```mermaid
 flowchart TD
     subgraph Client ["Frontend Layer (Streamlit)"]
         UI["Streamlit Web App (app.py)"]
+        AUTH_UI["User Auth Manager (auth.py)"]
         P1["Repository Ingestion Page"]
         P2["Community Dashboard"]
         P3["ML Analytics & Churn Page"]
         P4["AI Assistant Chatbot"]
+        
+        UI --> AUTH_UI
         UI --> P1
         UI --> P2
         UI --> P3
@@ -39,24 +58,28 @@ flowchart TD
 
     subgraph API ["Backend API Layer (FastAPI & Uvicorn)"]
         MAIN["FastAPI Server (main.py)"]
+        R_AUTH["/auth Router"]
         R_REPO["/repository Router"]
         R_ANALYTICS["/analytics Router"]
         R_CHAT["/chatbot Router"]
         R_DATA["/contributors, /commits, /issues, /pull_requests"]
         
+        MAIN --> R_AUTH
         MAIN --> R_REPO
         MAIN --> R_ANALYTICS
         MAIN --> R_CHAT
         MAIN --> R_DATA
     end
 
-    subgraph Service ["Service & Analytics Layer"]
+    subgraph Service ["Service & Security Layer"]
+        AUTH_SERV["Auth Service (auth_service.py)"]
         INGEST["Ingestion Pipeline (ingestion_pipeline.py)"]
         GH_CLIENT["GitHub API Client (github_client.py)"]
         ANALYTICS_ENG["Analytics Engine (analytics_services.py)"]
         SENTIMENT["VADER Sentiment Service (sentiment_services.py)"]
         LLM_SERV["LLM Assistant Service (llm_services.py)"]
         
+        R_AUTH --> AUTH_SERV
         INGEST --> GH_CLIENT
         ANALYTICS_ENG --> SENTIMENT
     end
@@ -83,8 +106,9 @@ flowchart TD
         OPENROUTER["OpenRouter API (LLM)"]
     end
 
-    %% Flow connections
-    Client <-->|REST Requests| API
+    %% Client-Backend Connections
+    Client <-->|REST API + Bearer Token| API
+    
     R_REPO --> INGEST
     R_ANALYTICS --> ANALYTICS_ENG
     R_ANALYTICS --> CHURN
@@ -93,60 +117,64 @@ flowchart TD
     
     INGEST <--> ORM
     ANALYTICS_ENG <--> ORM
+    AUTH_SERV <--> ORM
     
     GH_CLIENT <-->|HTTPS / PAT| GITHUB
-    LLM_SERV <-->|OpenAI SDK / HTTP| OPENROUTER
+    LLM_SERV <-->|HTTPS / API Key| OPENROUTER
 ```
 
 ---
 
 ## 🔄 Data Ingestion & Machine Learning Pipeline
 
-The diagram below outlines the end-to-end data lifecycle from GitHub API ingestion to database storage, feature extraction, ML model evaluation, and final visualization:
-
 ```mermaid
 sequenceDiagram
     autonumber
-    actor User as Maintainer / User
+    actor User as User / Maintainer
     participant UI as Streamlit UI
     participant API as FastAPI Backend
     participant GH as GitHub REST API
     participant DB as PostgreSQL Database
-    participant ML as ML & Analytics Engine
+    participant ML as Scikit-Learn ML Engine
     participant LLM as OpenRouter LLM API
 
-    User->>UI: Input Repository (Owner/Repo)
-    UI->>API: POST /repository/ingest
-    API->>GH: Fetch Repo Details, Commits, PRs, Issues, Contributors
+    User->>UI: Register / Login
+    UI->>API: POST /auth/login
+    API-->>UI: Return JWT Access Token
+    
+    User->>UI: Submit Repository (Owner/Repo)
+    UI->>API: POST /repository/ingest (with JWT Token)
+    API->>GH: Fetch Repo Details, Commits, PRs, Issues, Contributors, Languages
     GH-->>API: Raw JSON Payload
-    API->>DB: Upsert Repository Entities & Metadata
+    API->>DB: Store Repository Entities mapped to User ID
     API-->>UI: Ingestion Success Response
 
-    User->>UI: Request Analytics & Churn Prediction
+    User->>UI: Request Health & Churn Analysis
     UI->>API: GET /analytics/{repository_id}/churn
-    API->>DB: Query Repository Features & Metrics
-    DB-->>API: Metrics & Counts
-    API->>ML: Pass Feature Vector to Random Forest Classifier
-    ML-->>API: Churn Risk Level & Churn Probability (%)
-    API-->>UI: Display Health Score, Bus Factor & Churn Cards
+    API->>DB: Query Repository Activity Metrics
+    DB-->>API: Metric Data & Features
+    API->>ML: Evaluate Feature Vector with Random Forest Classifier
+    ML-->>API: Return Churn Risk Level & Churn Probability (%)
+    API-->>UI: Render Health Cards, Bus Factor & Churn Charts
 
-    User->>UI: Ask Question in AI Assistant
+    User->>UI: Ask Question to AI Assistant
     UI->>API: POST /chatbot/repository/{repository_id}
-    API->>DB: Retrieve Summary Context & Recent Activity
-    DB-->>API: Top Contributors, Issues & Commits
-    API->>LLM: Send Prompt + Context Payload
-    LLM-->>API: Generated AI Insight Response
-    API-->>UI: Display Chatbot Answer
+    API->>DB: Query Repository Context & Activity Summary
+    DB-->>API: Contributor, Commit & Issue Data
+    API->>LLM: Send Prompt + Repository Context Payload
+    LLM-->>API: Generated AI Response
+    API-->>UI: Render AI Answer in Chat Window
 ```
 
 ---
 
 ## 🗄 Entity Relationship (ER) Diagram
 
-GitInsight AI utilizes a relational schema built with **SQLAlchemy** and hosted on **PostgreSQL**. Below is the complete Entity Relationship diagram showing relationships across repositories, contributors, commits, issues, PRs, releases, branches, tags, languages, and calculated analytics:
+GitInsight AI utilizes a relational database schema built with **SQLAlchemy** and hosted on **PostgreSQL / Neon**. Below is the complete Entity Relationship diagram:
 
 ```mermaid
 erDiagram
+    user ||--o{ repositories : "owns / monitors"
     repositories ||--o{ contributors : "has many"
     repositories ||--o{ commits : "has many"
     repositories ||--o{ issues : "has many"
@@ -157,9 +185,18 @@ erDiagram
     repositories ||--o{ languages : "has many"
     repositories ||--|| repository_analytics : "has one"
 
+    user {
+        int id PK
+        string username UK
+        string email UK
+        string hashed_password
+        datetime created_at
+    }
+
     repositories {
         int id PK
-        bigint github_id UK
+        int user_id FK
+        bigint github_id
         string owner
         string name
         string full_name UK
@@ -302,38 +339,47 @@ GitInsight AI/
 ├── backend/
 │   ├── api/
 │   │   ├── analytics.py        # REST API endpoints for Health, Churn & Growth ML
-│   │   ├── chatbot.py          # REST API endpoints for OpenRouter LLM Chatbot
-│   │   ├── commits.py          # Commits API router
-│   │   ├── contributors.py     # Contributors API router
-│   │   ├── issues.py           # Issues API router
-│   │   ├── pull_requests.py    # Pull Requests API router
-│   │   └── repository.py       # Repository ingestion and query router
+│   │   ├── auth.py             # REST API endpoints for User Registration, Login & Profile
+│   │   ├── chatbot.py          # REST API endpoints for OpenRouter AI Assistant
+│   │   ├── commits.py          # REST API router for commit metrics
+│   │   ├── contributors.py     # REST API router for contributor metrics
+│   │   ├── issues.py           # REST API router for issue metrics
+│   │   ├── pull_requests.py    # REST API router for PR metrics
+│   │   └── repository.py       # REST API endpoints for repository ingestion & management
 │   ├── ml/
-│   │   ├── churn_prediction.py # Contributor churn prediction model & rules
-│   │   ├── feature_engineering.py # Data extraction & dataset builder for ML
-│   │   ├── growth_prediction.py# Growth prediction model & heuristics
-│   │   └── train.py            # Random Forest training script
+│   │   ├── churn_prediction.py # Contributor churn prediction model & rule fallbacks
+│   │   ├── feature_engineering.py # Feature extraction matrix builder for Scikit-Learn
+│   │   ├── growth_prediction.py# Repository growth forecasting model
+│   │   └── train.py            # Random Forest model training execution script
 │   ├── services/
-│   │   ├── analytics_services.py # Core repository health metric computations
+│   │   ├── analytics_services.py # Core health score & metric computation routines
+│   │   ├── auth_service.py     # Password hashing (bcrypt) & JWT token manager
 │   │   ├── github_client.py    # GitHub REST API client wrapper
 │   │   ├── ingestion_pipeline.py # Full repository ETL ingestion workflow
-│   │   ├── llm_services.py     # OpenRouter LLM integration
+│   │   ├── llm_services.py     # OpenRouter LLM assistant integration
 │   │   └── sentiment_services.py # VADER Sentiment analysis engine
-│   ├── create_table.py         # SQLAlchemy database table creation script
-│   ├── database.py             # Database engine & session management
-│   ├── main.py                 # FastAPI application entrypoint
-│   ├── models.py               # SQLAlchemy ORM models
-│   └── schemas.py              # Pydantic validation schemas
+│   ├── config.py               # Central environment variable configuration loader
+│   ├── create_table.py         # Database schema creation script
+│   ├── database.py             # SQLAlchemy engine & session factory
+│   ├── deps.py                 # FastAPI dependency injection (JWT auth & DB session)
+│   ├── main.py                 # FastAPI application entrypoint & middleware setup
+│   ├── migrate_db.py           # Automated schema migration helper
+│   ├── models.py               # SQLAlchemy ORM models definitions
+│   └── schemas.py              # Pydantic data validation schemas
 ├── frontend/
 │   ├── pages/
-│   │   ├── analytics.py        # Interactive Charts & Churn Risk UI
-│   │   ├── chatbot.py          # AI Assistant conversation interface
-│   │   ├── dashboard.py        # Community Health Dashboard
-│   │   └── repository.py       # GitHub Repository ingestion manager
-│   ├── app.py                  # Streamlit frontend entrypoint
-│   └── components.py           # Reusable UI banners, cards & styled headers
-├── .env                        # Environment variable configuration
-├── .gitignore                  # Git ignore rules
+│   │   ├── analytics.py        # Interactive Churn & Growth ML UI
+│   │   ├── chatbot.py          # AI Repository Assistant conversational interface
+│   │   ├── dashboard.py        # Community Health Metrics & Overview Dashboard
+│   │   └── repository.py       # GitHub Repository ingestion & selection manager
+│   ├── api_client.py           # Streamlit-to-FastAPI HTTP request wrapper
+│   ├── app.py                  # Streamlit application main entrypoint & sidebar
+│   ├── auth.py                 # Streamlit authentication UI & state manager
+│   ├── components.py           # Custom UI cards, badges & banner components
+│   └── utils.py                # Streamlit session state and visual helpers
+├── .env                        # Local environment variable configuration (ignored by git)
+├── .env.example                # Template for required environment variables
+├── .gitignore                  # Git repository exclusion rules
 └── requirements.txt            # Python dependencies manifest
 ```
 
@@ -341,83 +387,108 @@ GitInsight AI/
 
 ## 🛠 Technology Stack
 
-### **Backend & API**
-- **[FastAPI](https://fastapi.tiangolo.com/)**: Asynchronous, high-performance Python web API framework.
-- **[Uvicorn](https://www.uvicorn.org/)**: Lightning-fast ASGI server implementation.
-- **[SQLAlchemy](https://www.sqlalchemy.org/)**: SQL toolkit and Object Relational Mapper (ORM).
-- **[PostgreSQL / Neon DB](https://neon.tech/)**: Serverless cloud PostgreSQL database storage.
-- **[Pydantic](https://docs.pydantic.dev/)**: Data validation and settings management using Python type annotations.
+### **Backend & Security**
+- **[FastAPI](https://fastapi.tiangolo.com/)**: Modern, high-performance Python web API framework.
+- **[Uvicorn](https://www.uvicorn.org/)**: Lightning-fast ASGI web server.
+- **[SQLAlchemy](https://www.sqlalchemy.org/)**: Powerful SQL toolkit and Object Relational Mapper (ORM).
+- **[PostgreSQL / Neon DB](https://neon.tech/)**: Serverless cloud PostgreSQL relational database.
+- **[python-jose](https://python-jose.readthedocs.io/) & [bcrypt](https://pypi.org/project/bcrypt/)**: Secure JWT token generation and salted password hashing.
+- **[Pydantic](https://docs.pydantic.dev/)**: Data validation using Python type annotations.
 
 ### **Frontend & UI**
-- **[Streamlit](https://streamlit.io/)**: Interactive web application framework for data science and ML.
-- **[Plotly / Streamlit Components](https://plotly.com/)**: Rich data visualization charts and metrics cards.
+- **[Streamlit](https://streamlit.io/)**: Interactive web application framework for Python data apps.
+- **[Plotly](https://plotly.com/)**: Rich, interactive data visualizations and analytics charts.
 
 ### **Machine Learning & NLP**
-- **[Scikit-Learn](https://scikit-learn.org/)**: Machine learning algorithms (**RandomForestRegressor**, **RandomForestClassifier**).
-- **[Pandas](https://pandas.pydata.org/) & [NumPy](https://numpy.org/)**: High-performance data manipulation and feature matrix construction.
-- **[Joblib](https://joblib.readthedocs.io/)**: Serialization and persistence of trained ML models.
-- **[vaderSentiment](https://github.com/cjhutto/vaderSentiment)**: Rule-based sentiment analysis for issue & PR text.
+- **[Scikit-Learn](https://scikit-learn.org/)**: Machine learning models (**RandomForestClassifier**, **RandomForestRegressor**).
+- **[Pandas](https://pandas.pydata.org/) & [NumPy](https://numpy.org/)**: High-performance data manipulation and matrix transformations.
+- **[Joblib](https://joblib.readthedocs.io/)**: Model serialization and persistence.
+- **[vaderSentiment](https://github.com/cjhutto/vaderSentiment)**: Valence Aware Dictionary for Sentiment Reasoning NLP engine.
 
-### **External APIs & Integrations**
-- **[GitHub REST API](https://docs.github.com/en/rest)**: Direct data extraction for repository activity.
-- **[OpenRouter API](https://openrouter.ai/)**: Unified LLM endpoint accessing state-of-the-art AI models.
+### **External APIs**
+- **[GitHub REST API](https://docs.github.com/en/rest)**: Live data fetching for commits, PRs, issues, and contributors.
+- **[OpenRouter API](https://openrouter.ai/)**: Unified access point for advanced LLM reasoning models.
 
 ---
 
 ## ⚙️ Environment Configuration
 
-Create a `.env` file in the root directory of the repository with the following configuration keys:
+Copy `.env.example` to `.env` in the project root directory and fill in your credential values:
+
+```bash
+cp .env.example .env
+```
+
+### `.env` File Keys Reference:
 
 ```env
-# GitHub Personal Access Token (PAT) with repo scope
+# 🔑 GitHub Personal Access Token (PAT) with repo read scope
 GITHUB_TOKEN=your_github_personal_access_token
 
-# Database Connection URL (PostgreSQL)
-DATABASE_URL=postgresql://username:password@ep-host.region.aws.neon.tech/neondb?sslmode=require
+# 🗄 PostgreSQL Database Connection String (Neon PostgreSQL or Local Postgres)
+NEON_DATABASE_URL=postgresql://username:password@ep-host.region.aws.neon.tech/neondb?sslmode=require
 
-# OpenRouter API Key for AI Chatbot Insights
+# 🤖 OpenRouter / OpenAI API Key for AI Repository Assistant
 OPENAI_API_KEY=your_openrouter_api_key
+
+# 🔐 Secret Key for JWT Authentication (HS256)
+SECRET_KEY=your_random_secret_key_here
+
+# 🌐 Deployment Service URLs
+BACKEND_URL=http://127.0.0.1:8000
+FRONTEND_URL=http://localhost:8501
 ```
 
 ---
 
 ## 🚀 Getting Started
 
-Follow these step-by-step instructions to get GitInsight AI up and running on your local machine.
-
 ### **Prerequisites**
 - **Python 3.9+** installed.
-- A **PostgreSQL** database (or a free cloud instance on [Neon.tech](https://neon.tech/)).
+- A **PostgreSQL** database (or a free cloud database on [Neon.tech](https://neon.tech/)).
 - A **GitHub Personal Access Token** ([Generate here](https://github.com/settings/tokens)).
 - An **OpenRouter API Key** ([Get key here](https://openrouter.ai/keys)).
 
 ---
 
-### **1. Clone the Repository & Set Up Environment**
+### **1. Clone the Repository & Prepare Environment**
 
 ```bash
-# Clone repository
+# Clone the repository
 git clone https://github.com/ParmeetCS/GitInsight-AI.git
 cd "GitInsight AI"
 
-# Create virtual environment
+# Create a virtual environment
 python -m venv venv
 
 # Activate virtual environment
-# Windows:
+# On Windows:
 venv\Scripts\activate
-# macOS / Linux:
+# On macOS / Linux:
 source venv/bin/activate
 
-# Install dependencies
+# Install required dependencies
 pip install -r requirements.txt
 ```
 
 ---
 
-### **2. Initialize Database Tables**
+### **2. Set Up Environment Variables**
 
-Run the database setup script to create all SQLAlchemy schema tables in PostgreSQL:
+Create `.env` based on `.env.example`:
+
+```bash
+# Copy example configuration template
+cp .env.example .env
+```
+
+Edit `.env` with your actual `GITHUB_TOKEN`, `NEON_DATABASE_URL`, `OPENAI_API_KEY`, and `SECRET_KEY`.
+
+---
+
+### **3. Initialize Database Tables**
+
+Run the database setup script to apply database schema and migrations:
 
 ```bash
 python backend/create_table.py
@@ -425,80 +496,91 @@ python backend/create_table.py
 
 ---
 
-### **3. Train Machine Learning Models (Optional)**
+### **4. Train Machine Learning Models (Optional)**
 
-To train the Scikit-Learn Random Forest Growth and Churn models on ingested data:
+Train the Scikit-Learn Random Forest Growth and Churn models:
 
 ```bash
 python backend/ml/train.py
 ```
 
-> *Note: If model files (`growth_model.pkl` or `churn_model.pkl`) are not present, the system automatically falls back to robust heuristic scoring algorithms.*
+> *Note: If pre-trained model files are missing, GitInsight AI automatically uses intelligent heuristic calculation engines.*
 
 ---
 
-### **4. Start the FastAPI Backend Server**
+### **5. Run the FastAPI Backend Server**
 
-Launch the backend REST API server on `http://127.0.0.1:8000`:
+Start the FastAPI application server locally on `http://127.0.0.1:8000`:
 
 ```bash
 uvicorn backend.main:app --reload --port 8000
 ```
 
-You can view the interactive OpenAPI documentation at **[http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)**.
+Access the interactive Swagger API documentation at: **[http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)**.
 
 ---
 
-### **5. Start the Streamlit Frontend Dashboard**
+### **6. Run the Streamlit Frontend Dashboard**
 
-In a separate terminal window (with your virtual environment active):
+In a new terminal window (with the virtual environment activated):
 
 ```bash
 streamlit run frontend/app.py
 ```
 
-The dashboard will open automatically in your default browser at **`http://localhost:8501`**.
+The Streamlit dashboard will automatically launch at **`http://localhost:8501`**.
 
 ---
 
 ## 📌 API Reference Summary
 
-Below is an overview of key REST API endpoints provided by the backend:
-
-| Category | Endpoint | Method | Description |
-| :--- | :--- | :---: | :--- |
-| **System** | `/health` | `GET` | Health check endpoint |
-| **Repository** | `/repository/ingest` | `POST` | Ingest repository from GitHub (`owner`, `repo`) |
-| **Repository** | `/repository/` | `GET` | List all ingested repositories |
-| **Repository** | `/repository/{owner}/{repo}` | `GET` | Fetch details for a specific repository |
-| **Analytics** | `/analytics/{repository_id}` | `POST` | Trigger calculation of health & engagement metrics |
-| **Analytics** | `/analytics/{repository_id}` | `GET` | Fetch computed repository metrics |
-| **Analytics** | `/analytics/{repository_id}/churn` | `GET` | Predict contributor churn probability & risk level |
-| **Analytics** | `/analytics/{repository_id}/growth` | `GET` | Forecast predicted health & growth score |
-| **Chatbot** | `/chatbot/repository/{repository_id}` | `POST` | Query AI Repository Assistant with custom question |
+| Category | Endpoint | Method | Security | Description |
+| :--- | :--- | :---: | :---: | :--- |
+| **System** | `/health` | `GET` | Public | System health check endpoint |
+| **Auth** | `/auth/register` | `POST` | Public | Register a new user account |
+| **Auth** | `/auth/login` | `POST` | Public | Authenticate user & return JWT Bearer token |
+| **Auth** | `/auth/me` | `GET` | Bearer Auth | Retrieve currently authenticated user profile |
+| **Repository** | `/repository/ingest` | `POST` | Bearer Auth | Ingest repository data from GitHub (`owner`, `repo`) |
+| **Repository** | `/repository/` | `GET` | Bearer Auth | List user's ingested repositories |
+| **Repository** | `/repository/{owner}/{repo}` | `GET` | Bearer Auth | Fetch specific repository details |
+| **Repository** | `/repository/refresh` | `POST` | Bearer Auth | Re-ingest and update repository data |
+| **Repository** | `/repository/{id}/languages` | `GET` | Bearer Auth | Get language breakdown statistics |
+| **Analytics** | `/analytics/{id}` | `POST` | Public | Compute and store repository health metrics |
+| **Analytics** | `/analytics/{id}` | `GET` | Public | Fetch computed repository health metrics |
+| **Analytics** | `/analytics/{id}/churn` | `GET` | Public | Predict contributor churn probability & risk level |
+| **Analytics** | `/analytics/{id}/growth` | `GET` | Public | Forecast predicted growth & trajectory score |
+| **Chatbot** | `/chatbot/repository/{id}` | `POST` | Public | Query AI Assistant with custom question |
+| **Chatbot** | `/chatbot/explain` | `POST` | Public | Request AI explanation of repository metrics |
+| **Data** | `/commits/{id}` | `GET` | Public | Retrieve repository commit history |
+| **Data** | `/contributors/{id}` | `GET` | Public | Retrieve contributor activity metrics |
+| **Data** | `/issues/{id}` | `GET` | Public | Retrieve issue metrics & sentiment |
+| **Data** | `/pull_requests/{id}` | `GET` | Public | Retrieve pull request metrics & sentiment |
 
 ---
 
 ## 📈 Community Health Score & Churn Methodology
 
 1. **Community Health Score (0-100)**: Evaluated using a weighted blend of:
-   - **Commit Frequency**: Frequency and consistency of recent code updates.
-   - **PR Merge Rate & Velocity**: Ratio of merged vs. abandoned pull requests and time-to-merge.
-   - **Issue Resolution Time**: Average time required to triage and close issues.
-   - **Contributor Growth & Retention**: Active contributor trend over time.
-2. **Bus Factor Risk**: Measures key contributor concentration. A low Bus Factor signifies that critical knowledge is concentrated in too few maintainers.
-3. **Contributor Churn Prediction**: Combines Random Forest classification with commit drop-off metrics, issue resolution velocity, and release activity to output a **Low**, **Medium**, or **High** risk profile with an exact churn percentage.
+   - **Commit Frequency**: Consistency and volume of recent code commits.
+   - **PR Merge Rate & Velocity**: Ratio of merged vs. unmerged pull requests and average time-to-merge.
+   - **Issue Resolution Time**: Average duration required to triage and close open issues.
+   - **Contributor Growth & Retention**: Active contributor velocity over time.
+2. **Bus Factor Risk**: Quantifies contributor dependency. A low Bus Factor flags critical knowledge concentration risk among very few active maintainers.
+3. **Contributor Churn Prediction**: Combines Random Forest classification with commit drop-off trends, issue resolution velocity, and release cadences to produce **Low**, **Medium**, or **High** risk levels with explicit churn probabilities.
 
 ---
-
 
 ## 🤝 Contributing
 
-Contributions are welcome! If you'd like to improve GitInsight AI:
-1. Fork the Project.
+Contributions are warmly welcome! To contribute:
+1. **Fork** the repository.
 2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`).
 3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`).
 4. Push to the Branch (`git push origin feature/AmazingFeature`).
-5. Open a Pull Request.
+5. Open a **Pull Request**.
 
 ---
+
+## 📄 License
+
+Distributed under the MIT License. See `LICENSE` for details.
